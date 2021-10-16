@@ -5,6 +5,8 @@ Created on Mon Oct 11 20:59:16 2021
 @author: Pastor
 """
 
+## The data is taken using EST time
+
 import requests                    # for "get" request to API
 import json                        # parse json into a list
 import pandas as pd                # working with data frames
@@ -15,17 +17,26 @@ import os
 import time
 from threading import Thread
 
-BASE_URL = 'https://api.binance.com'
+# Global variables
 
+BASE_URL = 'https://api.binance.com'
 symbols = []
+pair = 'BTC'
+timeframe = '1d' # timeframe use to get the data
+file_out = 'BTC' # Folder that contains the data
+n_pair = len(pair)
+
+
+# This function allow to get all symbols name pairs with USDT we can change it to use different pairs like BTC
 
 resp = requests.get(BASE_URL + '/api/v1/ticker/allBookTickers')
 tickers_list = json.loads(resp.content)
 for ticker in tickers_list:
-    if str(ticker['symbol'])[-4:] == 'USDT':
+    if str(ticker['symbol'])[-n_pair:] == pair:
         symbols.append(ticker['symbol'])
+        
 
-
+# this function allow to get the data from binance on EST time
 
 def get_binance_bars(symbol, interval, startTime, endTime):
  
@@ -57,13 +68,32 @@ def get_binance_bars(symbol, interval, startTime, endTime):
  
     return df
 
-timeframe = '1d'
+# Get the last year, month and day using in the main file to get the data only after that time
+# Ada is only use to get the last day available in the file
+
+
+# loop to get the data for all symbols and combine them into a single file
 
 for i in symbols:
     df_list = []
-    last_datetime = dt.datetime(2021, 1, 1) # year, month, day
+    
+    # path_crypto needs to be updated with your working directory and folder where you want store the data
+    path_crypto = r'C:\Users\Pastor\Dropbox\Pastor\data\binance_data_{0}\{1}.csv'.format(file_out, i)
+    if os.path.isfile(path_crypto) == True:
+        crypto = pd.read_csv(path_crypto)
+        t = crypto.Date.tail(1)
+        year = int(t.str[0:4])
+        month = int(t.str[5:7])
+        day = int(t.str[8:10]) 
+        
+    else:
+        year = 2000
+        month = 1
+        day = 1
+        
+    last_datetime = dt.datetime(year, month, day) # year, month, day
     while True:
-        print(last_datetime)
+        print(last_datetime, i)
         new_df = get_binance_bars(i, timeframe, last_datetime, dt.datetime.now())
         if new_df is None:
             break
@@ -71,17 +101,13 @@ for i in symbols:
         last_datetime = max(new_df.index) + dt.timedelta(1, 0)
         df = pd.concat(df_list)
         df.reset_index(level=0, inplace=True)
-        df.columns = ['']
-
+        df.columns = ['Date', 'datetime', 'Open', 'High', 'Low', 'Close', 'Volume', 'adj_close']
         
-        file_dir = r'C:\Users\Pastor\Dropbox\Pastor\data\binance_data_feather\{0}.feather'.format(i)
+    if os.path.isfile(path_crypto) == True:
+        df_main = pd.read_csv(path_crypto)
+        df_update = pd.concat([df_main, df], sort = False)
+        df = df_update.drop_duplicates(subset = ["Date"])
+        print("-------------Update----------")
         
-        df.to_feather(file_dir)
-
-        
-        #df.to_csv(file_dir, index = True, header=True)
-        
-
-
-
-
+    df.to_csv(path_crypto, index = False)
+      
