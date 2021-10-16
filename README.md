@@ -12,3 +12,7 @@ Software
 # Trading strategy
 
 * Divergence strategy
+
+# Binance
+
+* Get all Binance historical data for every USDT pair in any timeframe
