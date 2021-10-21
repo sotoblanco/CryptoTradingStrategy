@@ -9,8 +9,11 @@ library(xts)
 library(tidyquant)
 library(stringr)
 
+options(scipen = 999) # this allow to not use scientific notation for the output
+
+pair = "USDT"
 # Read the weekly file
-setwd("C:/Users/Pastor/Dropbox/Pastor/data/binance_data")
+setwd(sprintf("C:/Users/Pastor/Dropbox/Pastor/data/binance_data_%s", pair))
 filelist = list.files(pattern = ".*.csv")
 crypto <- lapply(filelist, FUN=read.csv)
 names(crypto) <- filelist
@@ -61,7 +64,9 @@ crypto_list <- crypto %>% bind_rows %>%
 
 crypto_list <- rename(crypto_list, day_month = Date, Close = Close)
 
-crypto_list$crypto_name <- str_sub(crypto_list$crypto_name, end = -9)
+len_del = nchar(pair) + 5
+
+crypto_list$crypto_name <- str_sub(crypto_list$crypto_name, end = -len_del)
 crypto_list$day_month <- str_sub(crypto_list$day_month, end = -10)
 
 crypto_list_last <- subset(crypto_list, day_month == last(crypto_list$day_month))
@@ -74,13 +79,18 @@ ant_indicator <- crypto_list %>% group_by(crypto_name) %>% summarise(day_month =
                                                                      blue = last(blue), 
                                                                      yellow = last(yellow),
                                                                      green = last(green),
-                                                                     Close = round(last(Close),2))
+                                                                     Close = last(Close))
+
+ant_indicator$day_month <- as.Date(ant_indicator$day_month)
+ant_indicator <- ant_indicator[with(ant_indicator, order(day_month)),]
+
+ant_indicator <- ant_indicator[!ant_indicator$day_month != last(ant_indicator$day_month),]
 
 ant_indicator <- ant_indicator[with(ant_indicator, order(-momentum_total, -volume_mon, -price_mom)),]
 
 setwd("C:/Users/Pastor/Dropbox/Pastor/Power BI/Data")
-write.csv(crypto_list, "crypto_list.csv", row.names = FALSE)
+write.csv(crypto_list, sprintf("crypto_list_%s.csv", pair), row.names = FALSE)
 
 setwd("C:/Users/Pastor/Dropbox/Pastor/ANT Indicator")
-write.csv(ant_indicator, "ant_selection.csv", row.names = FALSE)
+write.csv(ant_indicator, sprintf("ant_selection_%s.csv", pair), row.names = FALSE)
 

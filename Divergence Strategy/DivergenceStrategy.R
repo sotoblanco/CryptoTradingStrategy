@@ -2,15 +2,23 @@ library(TTR)
 library(tidyverse)
 
 # futures instrument
-instrument = "BTC"
+instrument = "NQ"
 
 path_file_update <- file.path(dirname("C:/Users/Pastor/Dropbox/Pastor/data/MarketProfile_data/.."))
 data_main <- sprintf("%s_updated.csv", instrument)
 
 df <- read.csv(file.path(path_file_update, data_main))
-df$Date <- as.POSIXct(df$Date)
+df$day_month <- as.Date(df$Date, format = "%Y-%m-%d")
 
-ggplot(df, aes(x = Date, y = Close))+
+df <- df %>% group_by(day_month) %>% summarise(Open = first(Open),
+                                               High = max(High),
+                                               Low = min(Low),
+                                               Close = last(Close),
+                                               Volume = sum(Volume))
+
+#df$Date <- as.POSIXct(df$Date)
+
+ggplot(df, aes(x = day_month, y = Close))+
   geom_line()
 
 tp = 14
@@ -22,10 +30,10 @@ df$AroonUp <- trend$aroonUp
 
 df <- na.omit(df)
 
-ggplot(tail(df,200), aes(x = Date, y = AroonDown))+
+ggplot(tail(df,200), aes(x = day_month, y = AroonDown))+
   geom_line()
 
-ggplot(tail(df,200), aes(x = Date, y = AroonUp))+
+ggplot(tail(df,200), aes(x = day_month, y = AroonUp))+
   geom_line()
 
 # compute the aroon value for the RSI
@@ -36,10 +44,10 @@ df$AroonUpRSI <- trendRSI$aroonUp
 #df <- na.omit(df)
 
 # visualize the aroon values for the RSI
-ggplot(tail(df, 200), aes(x = Date, y = AroonDownRSI))+
+ggplot(tail(df, 200), aes(x = day_month, y = AroonDownRSI))+
   geom_line()
 
-ggplot(tail(df, 200), aes(x = Date, y = AroonUpRSI))+
+ggplot(tail(df, 200), aes(x = day_month, y = AroonUpRSI))+
   geom_line()
 
 # calculate the spread or aroonup values for the price series and the RSI
@@ -87,5 +95,5 @@ df$cumsum_ret <- cumsum(df$StrRet)
 
 
 # plot the returns
-ggplot(df, aes(x = Date, y = cumsum_ret)) +
+ggplot(df, aes(x = day_month, y = cumsum_ret)) +
   geom_line()
