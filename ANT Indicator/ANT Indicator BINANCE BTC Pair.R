@@ -12,8 +12,9 @@ library(stringr)
 options(scipen = 999) # this allow to not use scientific notation for the output
 
 pair = "USDT"
+timeframe = "1d"
 # Read the weekly file
-setwd(sprintf("C:/Users/Pastor/Dropbox/Pastor/data/binance_data_%s", pair))
+setwd(sprintf("D:/Dropbox/Pastor/data/binance_data_%s", timeframe))
 filelist = list.files(pattern = ".*.csv")
 crypto <- lapply(filelist, FUN=read.csv)
 names(crypto) <- filelist
@@ -88,9 +89,9 @@ ant_indicator <- ant_indicator[!ant_indicator$day_month != last(ant_indicator$da
 
 ant_indicator <- ant_indicator[with(ant_indicator, order(-momentum_total, -volume_mon, -price_mom)),]
 
-setwd("C:/Users/Pastor/Dropbox/Pastor/Power BI/Data")
+setwd("D:/Dropbox/Pastor/Power BI/Data")
 write.csv(crypto_list, sprintf("crypto_list_%s.csv", pair), row.names = FALSE)
 
-setwd("C:/Users/Pastor/Dropbox/Pastor/ANT Indicator")
+setwd("D:/Dropbox/Pastor/ANT Indicator")
 write.csv(ant_indicator, sprintf("ant_selection_%s.csv", pair), row.names = FALSE)
 

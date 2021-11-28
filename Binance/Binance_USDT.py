@@ -18,13 +18,13 @@ import time
 from threading import Thread
 
 # Global variables
-
 BASE_URL = 'https://api.binance.com'
 symbols = []
-pair = 'BTC'
-timeframe = '1d' # timeframe use to get the data
-file_out = 'BTC' # Folder that contains the data
+pair = input('set the pair you want to downloand (USDT, BTC, ETH): >> ')
+timeframe = input('set the timeframe you want to download (1d, 1m): >> ') # timeframe use to get the data
 n_pair = len(pair)
+folder = r'D:\Dropbox\Pastor\data\binance_data_{0}'.format(timeframe) # folder where you want to store your data
+
 
 
 # This function allow to get all symbols name pairs with USDT we can change it to use different pairs like BTC
@@ -78,7 +78,7 @@ for i in symbols:
     df_list = []
     
     # path_crypto needs to be updated with your working directory and folder where you want store the data
-    path_crypto = r'C:\Users\Pastor\Dropbox\Pastor\data\binance_data_{0}\{1}.csv'.format(file_out, i)
+    path_crypto = '{0}\{1}.csv'.format(folder, i)
     if os.path.isfile(path_crypto) == True:
         crypto = pd.read_csv(path_crypto)
         t = crypto.Date.tail(1)
