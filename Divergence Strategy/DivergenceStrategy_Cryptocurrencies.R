@@ -4,8 +4,9 @@ library(tidyverse)
 options(scipen = 999) # this allow to not use scientific notation for the output
 
 pair = "USDT"
+timeframe = "1d"
 # Read the weekly file
-setwd(sprintf("C:/Users/Pastor/Dropbox/Pastor/data/binance_data_%s", pair))
+setwd(sprintf("D:/Dropbox/Pastor/data/binance_data_%s", timeframe))
 filelist = list.files(pattern = ".*.csv")
 crypto <- lapply(filelist, FUN=read.csv)
 names(crypto) <- filelist
@@ -76,7 +77,7 @@ crypto_list_last <- subset(crypto_list, Date == last(crypto_list$Date))
 crypto_list_last <- crypto_list_last[with(crypto_list_last, order(-UpSpread,-cumsum_ret)),]
 
 
-setwd("C:/Users/Pastor/Dropbox/Pastor/DivergenceStrategy")
+setwd("D:/Dropbox/Pastor/DivergenceStrategy")
 write.csv(crypto_list_last, sprintf("DivergenceStrategy_%s.csv", pair), row.names = FALSE)
 
 
